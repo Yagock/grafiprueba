@@ -3,20 +3,11 @@
 Operación Órbita Dual — ejemplo funcional (GLFW + PyOpenGL, pipeline fijo).
 Sin GLUT: la esfera se dibuja con gluSphere (GLU).
 
-Instalación (venv recomendado):
-  pip install PyOpenGL PyOpenGL_accelerate glfw
-
 Controles:
   1  Modo: rotar OBJETO (cámara fija)
   2  Modo: orbitar CÁMARA (objeto fijo, variante rotate(-a) + translate)
   3  Modo: gluLookAt (órbita del ojo)
   ESC o Q  Salir
-
-Cambios que debes hacer (alumnos):
-  - Misión 1: en render_orbiting_camera_variant_b() prueba el OTRO orden
-    (translate + rotate) y compara con capturas.
-  - Misión 2: ajusta radio de órbita (5.0) o distancia Z (-5) y documenta.
-  - Misión 3: activa USE_LIGHTING = True y mueve glLightfv al sitio indicado.
 """
 
 from __future__ import annotations
@@ -32,53 +23,68 @@ from OpenGL.GLU import (
     gluNewQuadric,
     gluPerspective,
     gluQuadricDrawStyle,
+    gluQuadricNormals,
+    GLU_SMOOTH,
     gluSphere,
 )
 
 # ---------------------------------------------------------------------------
-# Configuración que suelen tocar los alumnos
+# Configuración
+# CAM_DISTANCE: distancia de la cámara al origen. Mayor = objeto más pequeño.
+# ORBIT_RADIUS: radio de la órbita en gluLookAt (Modo 3). Mayor = más lejos.
+# ANGLE_SPEED:  grados por frame. Mayor = rotación más rápida.
 # ---------------------------------------------------------------------------
-WINDOW_TITLE = "Orbita Dual (GLFW) — 1/2/3 cambia modo"
-INITIAL_MODE = 1  # 1, 2 o 3
-ORBIT_RADIUS = 5.0
-CAM_DISTANCE = 5.0  # alejamiento en -Z en modos 1 y 2
-ANGLE_SPEED = 0.6  # grados por frame (sube/baja para animar más rápido)
+WINDOW_TITLE  = "Orbita Dual (GLFW) — 1/2/3 cambia modo"
+INITIAL_MODE  = 1
+ORBIT_RADIUS  = 5.0   # radio de órbita en Modo 3
+CAM_DISTANCE  = 5.0   # alejamiento en -Z en Modos 1 y 2
+ANGLE_SPEED   = 0.6   # velocidad de rotación en grados/frame
 
-# Misión 3: pon True y completa la colocación de la luz respecto a la cámara/objeto
-USE_LIGHTING = False
-
+USE_LIGHTING  = True  # Misión 3: iluminación activa
 
 # ---------------------------------------------------------------------------
-# Geometría (GLU, no GLUT)
+# Geometría
 # ---------------------------------------------------------------------------
 _quadric = None
-
 
 def draw_sphere(radius: float = 1.0) -> None:
     global _quadric
     if _quadric is None:
         _quadric = gluNewQuadric()
         gluQuadricDrawStyle(_quadric, GLU_FILL)
+        gluQuadricNormals(_quadric, GLU_SMOOTH)  # normales para iluminación suave
     gluSphere(_quadric, radius, 40, 24)
 
 
 def setup_basic_lighting() -> None:
-    """Luz simple en coordenadas de vista (0,0,1) — experimenta moviéndola."""
+    """
+    Luz posicional fija en coordenadas de mundo.
+    Al definirla ANTES de cualquier rotación del objeto, la luz no se mueve
+    con él — las sombras cambian al rotar, lo que da sensación de volumen real.
+    """
     glEnable(GL_LIGHTING)
     glEnable(GL_LIGHT0)
     glEnable(GL_COLOR_MATERIAL)
     glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE)
 
-    pos = [0.5, 0.8, 1.0, 0.0]  # direccional si w=0
-    amb = [0.2, 0.2, 0.2, 1.0]
-    dif = [0.9, 0.9, 0.85, 1.0]
-    glLightfv(GL_LIGHT0, GL_POSITION, pos)
-    glLightfv(GL_LIGHT0, GL_AMBIENT, amb)
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, dif)
+    glLightfv(GL_LIGHT0, GL_AMBIENT,  [0.2, 0.2, 0.2, 1.0])
+    glLightfv(GL_LIGHT0, GL_DIFFUSE,  [0.9, 0.9, 0.85, 1.0])
+    glLightfv(GL_LIGHT0, GL_SPECULAR, [1.0, 1.0, 1.0,  1.0])
+    # w=1.0 → luz posicional; posición fija en el mundo (se llama antes de rotar)
+    glLightfv(GL_LIGHT0, GL_POSITION, [3.0, 3.0, 3.0, 1.0])
+
+    glMaterialf(GL_FRONT, GL_SHININESS, 64)
+    glMaterialfv(GL_FRONT, GL_SPECULAR, [0.8, 0.8, 0.8, 1.0])
+
+    # Luz de relleno tenue (azul) para que el lado oscuro no quede negro total
+    glEnable(GL_LIGHT1)
+    glLightfv(GL_LIGHT1, GL_AMBIENT,  [0.0, 0.0, 0.05, 1.0])
+    glLightfv(GL_LIGHT1, GL_DIFFUSE,  [0.1, 0.1, 0.3,  1.0])
+    glLightfv(GL_LIGHT1, GL_POSITION, [-3.0, 1.0, 1.0, 1.0])
 
 
 # ---------------------------------------------------------------------------
-# Tres modos de cámara / objeto
+# Modos de cámara / objeto
 # ---------------------------------------------------------------------------
 def render_rotating_object(angle: float) -> None:
     """Modo 1: cámara fija (translate -Z), el objeto rota."""
@@ -92,8 +98,9 @@ def render_rotating_object(angle: float) -> None:
 
 def render_orbiting_camera(angle: float) -> None:
     """
-    Modo 2 (variante del material): primero rotar la vista (-angle en Y),
-    luego alejar en -Z. Objeto conceptualmente fijo en origen.
+    Modo 2: primero rotar la vista (-angle), luego alejar en -Z.
+    El objeto queda conceptualmente fijo en el origen.
+    Orden: rotate(-a) → translate(-Z)
     """
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
@@ -105,8 +112,9 @@ def render_orbiting_camera(angle: float) -> None:
 
 def render_orbiting_camera_variant_b(angle: float) -> None:
     """
-    Variante alternativa (como en el diagrama del .org): translate primero, rotate después.
-    Descomenta en main() y compara con render_orbiting_camera().
+    Variante B: translate(-Z) primero, luego rotate(+angle).
+    Comparado con render_orbiting_camera, el objeto aparenta girar
+    (igual que Modo 1) porque el orden invierte la semántica.
     """
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
@@ -123,24 +131,27 @@ def render_with_lookat(angle: float) -> None:
     a = math.radians(angle)
     cam_x = ORBIT_RADIUS * math.sin(a)
     cam_z = ORBIT_RADIUS * math.cos(a)
-    gluLookAt(cam_x, 0.0, cam_z, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0)
+    gluLookAt(cam_x, 0.0, cam_z,   # posición del ojo
+              0.0,   0.0, 0.0,     # objetivo (origen)
+              0.0,   1.0, 0.0)     # vector "arriba"
     glColor3f(0.95, 0.85, 0.35)
     draw_sphere(1.0)
 
 
+# ---------------------------------------------------------------------------
+# Main
+# ---------------------------------------------------------------------------
 def main() -> None:
     if not glfw.init():
         print("Error: no se pudo inicializar GLFW", file=sys.stderr)
         sys.exit(1)
 
-    # OpenGL 2.1 = pipeline fijo usable en Linux/Windows (mac puede exigir perfil distinto)
     glfw.window_hint(glfw.CONTEXT_VERSION_MAJOR, 2)
     glfw.window_hint(glfw.CONTEXT_VERSION_MINOR, 1)
 
     window = glfw.create_window(800, 600, WINDOW_TITLE, None, None)
     if not window:
         glfw.terminate()
-        print("Error: no se pudo crear la ventana OpenGL", file=sys.stderr)
         sys.exit(1)
 
     glfw.make_context_current(window)
@@ -182,15 +193,10 @@ def main() -> None:
         glLoadIdentity()
         gluPerspective(50.0, fb_w / float(fb_h), 0.1, 100.0)
 
-        if not USE_LIGHTING:
-            glDisable(GL_LIGHTING)
-
         if mode == 1:
             render_rotating_object(angle)
         elif mode == 2:
             render_orbiting_camera(angle)
-            # Prueba comparativa (descomenta):
-            # render_orbiting_camera_variant_b(angle)
         else:
             render_with_lookat(angle)
 

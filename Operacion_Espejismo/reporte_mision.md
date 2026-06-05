@@ -7,7 +7,7 @@
 
 Misión 1:
 
-![Mision 1](Imagenes/Mision_1.png)
+![Mision 1](Mision_1.png)
 
     import cv2 as cv
     import numpy as np
@@ -31,7 +31,7 @@ Misión 1:
 
 Misión 2:
 
-![Mision 2](Imagenes/Mision_2.png)
+![Mision 2](Mision_2.png)
 
     import cv2 as cv
     import numpy as np
@@ -76,7 +76,7 @@ Misión 2:
 
 Misión 3:
 
-![Mision 3](Imagenes/Mision_3.png)
+![Mision 3](Mision_3.png)
 
     import cv2 as cv
     import numpy as np
@@ -96,7 +96,7 @@ Misión 3:
 
 Misión 4:
 
-![Mision 4](Imagenes/Mision_4.png)
+![Mision 4](Mision_4.png)
 
     import cv2 as cv
     import numpy as np
@@ -115,7 +115,7 @@ Misión 4:
 
 Misión 5:
 
-![Mision 5](Imagenes/Mision_5.png)
+![Mision 5](Mision_5.png)
 
     import numpy as np
     import cv2 as cv

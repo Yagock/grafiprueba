@@ -5,9 +5,9 @@
 ## Evidencias
 ### Misión 1
 - Imagen recuperada x50:
-![Recuperada x50](Imagenes/m1_recuperado_x50.png)
+![Recuperada x50](../Imagenes/m1_recuperado_x50.png)
 - Imagen recuperada x50 + 20:
-![Recuperada x50 + 20](Imagenes/m1_recuperado_x50_mas20.png)
+![Recuperada x50 + 20](../Imagenes/m1_recuperado_x50_mas20.png)
 - Código:
 
         import cv2
@@ -51,7 +51,7 @@
 
 ### Misión 2
 - QR reconstruido:
-![QR reconstruído](Imagenes/m2_qr_reconstruido.png)
+![QR reconstruído](../Imagenes/m2_qr_reconstruido.png)
 - Código:
 
         import cv2
@@ -81,7 +81,7 @@
 
 ### Misión 3
 - Sello forjado:
-![Sello forjado](Imagenes/m3_sello_forjado_v2.png)
+![Sello forjado](../Imagenes/m3_sello_forjado_v2.png)
 - Código:
 
         import cv2
@@ -122,9 +122,9 @@
 
 ### Misión 4
 - Máscara Cyan:
-![Máscara Cyan](Imagenes/m4_mask_cyan.png)
+![Máscara Cyan](../Imagenes/m4_mask_cyan.png)
 - Suavizada:
-![Suavizada](Imagenes/m4_suavizada.png)
+![Suavizada](../Imagenes/m4_suavizada.png)
 - Código:
 
         import cv2
@@ -154,9 +154,9 @@
 
 ### Misión 5
 - Evidencia tricolor:
-![Tricolor](Imagenes/m5_tricolor.png)
+![Tricolor](../Imagenes/m5_tricolor.png)
 - Mensaje recuperado:
-![Mensaje recuperado](Imagenes/m5_mensaje.png)
+![Mensaje recuperado](../Imagenes/m5_mensaje.png)
 - Código:
 
         import cv2
